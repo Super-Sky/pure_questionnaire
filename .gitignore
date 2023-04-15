@@ -1,0 +1,21 @@
+pure/DS_Store
+pure/node_modules/
+pure/dist/
+pure/npm-debug.log*
+pure/yarn-debug.log*
+pure/yarn-error.log*
+
+# Editor directories and files
+pure/.idea
+pure/.vscode
+pure/*.suo
+pure/*.ntvs*
+pure/*.njsproj
+pure/*.sln
+
+pureAdmin/.idea
+
+.idea
+
+pureAdmin/pureAdmin/settings.py
+pureAdmin/myAdmin/dist*
