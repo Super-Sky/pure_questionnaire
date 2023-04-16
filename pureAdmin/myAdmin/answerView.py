@@ -64,7 +64,7 @@ def getInfo(info,request,ip):
         except:
             response['code'] = '-10'
             response['msg'] = '问卷不存在'
-        submit_list = Submit.objects.create(wjId=wjId,submitIp=ip,)
+        submit_list = Submit.objects.filter(wjId=wjId,submitIp=ip,)
         if submit_list.len() > 0 :
             response['code'] = '-10'
             response['msg'] = '问卷已填写'
