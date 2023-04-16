@@ -24,13 +24,17 @@ def opera(request):
             response['code'] = '-2'
             response['msg'] = '请求格式有误'
         opera_type=info.get('opera_type')#获取操作类型
+        if 'HTTP_X_FORWARDED_FOR' in request.META:
+            ip = request.META.get('HTTP_X_FORWARDED_FOR')
+        else:
+            ip = request.META.get('REMOTE_ADDR')
         if opera_type:
             if opera_type=='get_info':#获取问卷信息
-                response=getInfo(info,request)
+                response=getInfo(info,request,ip)
             elif opera_type=='get_temp_info':#获取问卷信息
                 response=getTempInfo(info,request)
             elif opera_type=='submit_wj':#提交问卷
-                response=submitWj(info,request)
+                response=submitWj(info,request,ip)
             else:
                 response['code'] = '-7'
                 response['msg'] = '请求类型有误'
@@ -48,7 +52,7 @@ def opera(request):
 #功能：获取问卷信息
 #最后更新：2019-05-24
 ############################################################
-def getInfo(info,request):
+def getInfo(info,request,ip):
     response = {'code': 0, 'msg': 'success'}
     wjId=info.get('wjId')
     username = request.session.get('username')
@@ -60,6 +64,10 @@ def getInfo(info,request):
         except:
             response['code'] = '-10'
             response['msg'] = '问卷不存在'
+        submit_list = Submit.objects.create(wjId=wjId,submitIp=ip,)
+        if submit_list.len() > 0 :
+            response['code'] = '-10'
+            response['msg'] = '问卷已填写'
         else:
             if res.username==username or res.status==1:#只有问卷发布者或者此问卷为已发布才能查看
                 obj = Question.objects.filter(wjId=wjId)
@@ -142,15 +150,15 @@ def getTempInfo(info,request):
 #最后更新：2019-06-08
 ############################################################
 @transaction.atomic
-def submitWj(info,request):
+def submitWj(info,request,ip):
     response = {'code': 0, 'msg': 'success'}
     wjId = info.get('wjId')
     useTime=info.get('useTime')
     detail=info.get('detail')
-    if 'HTTP_X_FORWARDED_FOR' in request.META:
-        ip = request.META.get('HTTP_X_FORWARDED_FOR')
-    else:
-        ip = request.META.get('REMOTE_ADDR')
+    # if 'HTTP_X_FORWARDED_FOR' in request.META:
+    #     ip = request.META.get('HTTP_X_FORWARDED_FOR')
+    # else:
+    #     ip = request.META.get('REMOTE_ADDR')
 
     s1 = transaction.savepoint()#设置事务保存点 回滚使用
     if wjId:
