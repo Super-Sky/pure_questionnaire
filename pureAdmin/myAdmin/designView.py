@@ -528,7 +528,7 @@ def dataList(info):
                 temp_detail_submit.append(submit_time)
                 optMap = getOptBySubmitId(submit_id)
                 for question_id in temp_question_id_list:
-                    opt = optMap[question_id]
+                    opt = optMap.get(question_id,"")
                     temp_detail_submit.append(opt)
                 detail.append(temp_detail_submit)
             response['detail'] = detail
