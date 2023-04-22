@@ -17,6 +17,13 @@
         :loading="exportExcelLoading"
         >导出excel</el-button
       >
+      <el-button
+              type="primary"
+              size="mini"
+              @click.native="analysisExportExcelDay"
+              :loading="exportExcelLoading"
+              >导出今日结果excel</el-button
+            >
       <el-button type="success" size="mini" @click.native="exportPdf"
         >导出PDF</el-button
       >
@@ -188,6 +195,16 @@ export default {
        this.downloadFile(data);
        this.exportExcelLoading = false;
      });
+   },
+   analysisExportExcelDay() {
+        this.exportExcelLoading = true;
+        designOperaExcel({
+          opera_type: "analysis_export_excel_day",
+          wjId: this.wjId
+        }).then(data => {
+          this.downloadFile(data);
+          this.exportExcelLoading = false;
+        });
    },
    downloadFile(data) {
        // 构造一个 Blob 对象，并设置 MIME 类型为 Excel 文件的 MIME 类型

@@ -7,6 +7,7 @@ from django.db.models import Q
 from . import handle
 from io import BytesIO
 import base64
+from datetime import date
 
 
 ############################################################
@@ -65,7 +66,18 @@ def opera(request):
                     elif opera_type == 'analysis_export_excel':
                         wb = xlwt.Workbook(encoding='utf-8')
                         ws = wb.add_sheet('数据统计')
-                        analysisExportExcel(info,ws)
+                        analysisExportExcel(info,ws,"")
+                        output = BytesIO()
+                        wb.save(output)
+                        output.seek(0)
+                        response = HttpResponse(content_type='application/vnd.ms-excel')
+                        response['Content-Disposition'] = 'attachment; filename=example.xls'
+                        response.write(output.getvalue())
+                        return response
+                    elif opera_type == 'analysis_export_excel_day':
+                        wb = xlwt.Workbook(encoding='utf-8')
+                        ws = wb.add_sheet('数据统计')
+                        analysisExportExcel(info,ws,"day")
                         output = BytesIO()
                         wb.save(output)
                         output.seek(0)
@@ -509,7 +521,7 @@ def dataAnalysis(info):
     return response
 
 # 获取提交任务列表;
-def dataList(info):
+def dataList(info,day):
     response = {'code': 0, 'msg': 'success'}
     try:
         wjId=info.get('wjId')#获取问卷id
@@ -520,7 +532,11 @@ def dataList(info):
         if wjId:
             detail = list()
             # 插入提交id及时间
-            submit_data_list = list(Submit.objects.filter(wjId=wjId).values_list("id","submitTime"))
+            if day == "day":
+                today = date.today()
+                submit_data_list = list(Submit.objects.filter(wjId=wjId,submitTime__date=today).values_list("id","submitTime"))
+            else:
+                submit_data_list = list(Submit.objects.filter(wjId=wjId).values_list("id","submitTime"))
             questions = Question.objects.filter(wjId=wjId)
             temp_detail = list()
             temp_detail.append("提交id")
@@ -727,17 +743,15 @@ def useTemp(info, username):
 
 
 # 导出excel
-def analysisExportExcel(info,ws):
+def analysisExportExcel(info,ws,day):
     response = {'code': 0, 'msg': 'success'}
     wjId = info.get('wjId')
     if not wjId:
         response['code'] = '-3'
         response['msg'] = '确少必要参数'
         return response
-    wj = Wj.objects.get(id=wjId)
-    title = wj.title
     print("开始构建数据")
-    data = dataList(info)
+    data = dataList(info,day)
     print("构建数据完成")
     if data['code'] == 0:
         detail = data['detail']
