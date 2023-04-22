@@ -726,15 +726,20 @@ def analysisExportExcel(info):
         return response
     wj = Wj.objects.get(id=wjId)
     title = wj.title
+    print("开始构建数据")
     data = dataList(info)
+    print("构建数据完成")
     if data['code'] == 0:
         detail = data['detail']
+        print("构造输出数据")
         wb = handle.analysisExportExcel(detail, title)
+        print("构造输出数据完成")
         bio = BytesIO()
         wb.save(bio)
         bio.seek(0)
         response['filename'] = '%s.xls' % title
         response['b64data'] = base64.b64encode(bio.getvalue()).decode()
+        print("返回数据构建完成")
         return response
     else:
         return response
