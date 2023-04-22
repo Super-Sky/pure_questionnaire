@@ -138,6 +138,7 @@
 <script>
 import echarts from "echarts";
 import { designOpera } from "./api";
+import { designOperaExcel } from "./api";
 import Design from "./Design.vue";
 import axios from "axios";
 
@@ -178,33 +179,36 @@ export default {
       this.$alert("正在开发...", "提示");
     },
     // 导出excel
-    analysisExportExcel() {
-      this.exportExcelLoading = true;
-      designOpera({
-        opera_type: "analysis_export_excel",
-        wjId: this.wjId
-      }).then(data => {
-        this.doDownload(data.b64data, data.filename, "excel");
-        this.exportExcelLoading = false;
-      });
-    },
-    doDownload(data, filename, type) {
-      var b64data = data; //base64数据
-      // b64data = b64data.replace("data:" + type + ";base64,", "");
-      var bdata = this.dataURLtoBlob(b64data);
-      if (!b64data) {
-        return;
-      }
-      let url = window.URL.createObjectURL(new Blob([bdata]));
-      let link = document.createElement("a");
-      link.style.display = "none";
-      link.href = url;
-      //        link.download = 'ea7c0cf24153e0cd62bc8b64841fd84d.jpg'; //下载后文件名
-      link.setAttribute("download", filename);
+   analysisExportExcel() {
+     this.exportExcelLoading = true;
+     designOperaExcel({
+       opera_type: "analysis_export_excel",
+       wjId: this.wjId
+     }).then(data => {
+       this.downloadFile(data);
+       this.exportExcelLoading = false;
+     });
+   },
+   downloadFile(data) {
+       // 构造一个 Blob 对象，并设置 MIME 类型为 Excel 文件的 MIME 类型
+       const blob = new Blob([data], { type: 'application/vnd.ms-excel' })
 
-      document.body.appendChild(link);
-      link.click();
-    },
+       // 创建一个 URL 对象，该对象指向构造得到的 Blob 对象
+       const url = window.URL.createObjectURL(blob)
+
+       // 创建一个 a 标签，并设置其 download 属性和 href 属性
+       const link = document.createElement('a')
+       link.href = url
+       link.download = 'example.xls'
+
+       // 将 a 标签添加到 DOM 树中，并模拟用户点击操作
+       document.body.appendChild(link)
+       link.click()
+
+       // 释放 URL 对象占用的内存
+       window.URL.revokeObjectURL(url)
+
+   },
     dataURLtoBlob(dataurl) {
       //          dataurl=dataurl.replace('data:application/json;base64,','')
       console.log(dataurl);

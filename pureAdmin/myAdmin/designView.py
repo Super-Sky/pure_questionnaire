@@ -1,3 +1,4 @@
+import xlwt
 from django.shortcuts import HttpResponse
 import json
 from myAdmin.models import *
@@ -62,7 +63,16 @@ def opera(request):
                     elif opera_type == 'get_text_answer_detail':
                         response = getTextAnswerDetail(info)
                     elif opera_type == 'analysis_export_excel':
-                        response = analysisExportExcel(info)
+                        wb = xlwt.Workbook(encoding='utf-8')
+                        ws = wb.add_sheet('数据统计')
+                        analysisExportExcel(info,ws)
+                        output = BytesIO()
+                        wb.save(output)
+                        output.seek(0)
+                        response = HttpResponse(content_type='application/vnd.ms-excel')
+                        response['Content-Disposition'] = 'attachment; filename=example.xls'
+                        response.write(output.getvalue())
+                        return response
                     elif opera_type == 'answer_text_to_excel':
                         response = answerText2Excel(info)
                     else:
@@ -481,7 +491,7 @@ def dataAnalysis(info):
                 questionId=question.id
                 if questionType == "radio" or questionType == "checkbox":
                     result = getQuestionAnalysis(question.id)
-                    print(result)
+                    # print(result)
                 else:
                     # result = getQuestionText(question.id)
                     result = ''
@@ -717,7 +727,7 @@ def useTemp(info, username):
 
 
 # 导出excel
-def analysisExportExcel(info):
+def analysisExportExcel(info,ws):
     response = {'code': 0, 'msg': 'success'}
     wjId = info.get('wjId')
     if not wjId:
@@ -732,13 +742,7 @@ def analysisExportExcel(info):
     if data['code'] == 0:
         detail = data['detail']
         print("构造输出数据")
-        wb = handle.analysisExportExcel(detail, title)
-        print("构造输出数据完成")
-        bio = BytesIO()
-        wb.save(bio)
-        bio.seek(0)
-        response['filename'] = '%s.xls' % title
-        response['b64data'] = base64.b64encode(bio.getvalue()).decode()
+        handle.analysisExportExcel(detail,ws)
         print("返回数据构建完成")
         return response
     else:

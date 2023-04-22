@@ -3,13 +3,11 @@ import json
 
 
 #回答数据导出excel
-def analysisExportExcel(data,title='问卷统计'):
-    wb = xlwt.Workbook()
-    ws = wb.add_sheet('数据统计')
+def analysisExportExcel(data,ws):
     for index,question in enumerate(data):
         for i in range(len(question)):
             ws.write(index,i,question[i])
-    return wb
+    return
 
 
 def answerText2Excel(data):
